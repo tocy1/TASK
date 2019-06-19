@@ -1,0 +1,8 @@
+---
+
+- include: nagios.yaml
+- include: nodejs.yaml
+- include: haproxy.yaml
+- include: mariadb.yaml
+- include: nginx.yaml
+- include: Users.yaml
