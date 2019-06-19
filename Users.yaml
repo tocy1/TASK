@@ -1,0 +1,80 @@
+---
+- name: Create admin user
+  hosts: all
+  remote_user: root
+  tasks:
+    - name: Create new user
+      user:
+        name: admin
+    - name: Create .ssh folder
+      file:
+        path: ~admin/.ssh
+        state: directory
+        owner: admin
+        group: admin
+        mode: 0700
+     - name: Upload SSH key
+       copy:
+        src: ../keys/admin
+        dest: ~admin/.ssh/id_rsa
+        owner: admin
+        group: admin
+        mode: 0700
+    - name: Make sure we have a 'wheel' group
+      group:
+        name: wheel
+        state: present
+
+    - name: Allow 'wheel' group to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: Add sudoers users to wheel group
+      user: name=admin groups=wheel append=yes state=present createhome=yes
+    - name: Disable Password Authentication
+      lineinfile:
+           dest=/etc/ssh/sshd_config
+           regexp='^PasswordAuthentication'
+           line="PasswordAuthentication no"
+           state=present
+           backup=yes
+    - name: Disable Root Login
+      lineinfile:
+           dest=/etc/ssh/sshd_config
+           regexp='^PermitRootLogin'
+           line="PermitRootLogin no"
+           state=present
+           backup=yes
+      notify:
+       - restart ssh
+      handlers:
+   - name: restart ssh
+     service:
+       name=sshd
+       state=restarted
+
+- name: Create dev user
+  hosts: webserverdb
+  remote_user: root
+  tasks:
+    - name: Create new user
+      user:
+        name: dev
+    - name: Create .ssh folder
+      file:
+        path: ~dev/.ssh
+        state: directory
+        owner: dev
+        group: dev
+        mode: 0700
+     - name: Upload SSH key
+       copy:
+        src: ../keys/dev
+        dest: ~dev/.ssh/id_rsa
+        owner: dev
+        group: dev
+        mode: 0700

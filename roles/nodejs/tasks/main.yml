@@ -1,0 +1,26 @@
+---
+# tasks file for nodejs
+- include: nodepub.yml
+- include: osarch.yml
+- include: nodejs.yml
+- name: Install global npm packages
+  npm: global=yes name={{ item }} state=present
+  with_items: "{{ nodejs_global_packages }}"
+
+- name: "Install forever (to run Node.js app)."
+  npm: name=forever global=yes state=present
+    
+- name: "Check list of Node.js apps running."
+  command: forever list
+  register: forever_list
+  changed_when: false
+- name:  copying app.js to etc folder
+  copy:
+    src: /app.js
+    dest: /etc/app.js
+    owner: admin
+    group: admin
+    mode: 0644
+- name: "Start example Node.js app."
+  command: forever start /etc/app.js
+  when: "forever_list.stdout.find('/etc/app.js') == -1"

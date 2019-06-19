@@ -1,0 +1,28 @@
+---
+- name: Playbook for  haproxy setup
+    hosts: front
+    remote_user: root
+    tasks: 
+    -   name: install haproxy
+        yum: name=haproxy state=present
+        tags: haproxy
+
+    -   name: configure haproxy
+        template: src=haproxy.cfg dest=/etc/haproxy/haproxy.cfg
+        notify: reload haproxy
+        tags: haproxy
+    -   name: Add Nginx and nodejs webservers to /etc/hosts
+        lineinfile:
+          path: /etc/hosts
+          line: “{{ hostvars[item][‘ansible_default_ipv4’][‘address’] }} {{ hostvars[item][‘inventory_hostname’] }}”
+          state: present
+        with_items: “{{ groups[‘web’] }}”
+    -   name: start haproxy
+        service: name=haproxy state=running
+        tags: haproxy
+    handlers:
+    -   name: restart haproxy
+        service: name=haproxy state=restarted
+
+    -   name: reload haproxy
+        service: name=haproxy state=reloaded

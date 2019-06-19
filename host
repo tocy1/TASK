@@ -1,0 +1,22 @@
+[webservernginx]
+192.168.11.2
+[webservernodejs]
+192.168.11.1
+[db]
+192.168.11.3
+[webserverdb]
+192.168.11.3
+192.168.11.2
+192.168.11.1
+[nagios-server]
+192.168.11.4
+[front]
+ 
+haproxy ansible_host=192.168.11.5 ansible_connection=ssh ansible_user=centos ansible_password=password
+ 
+ 
+[web:children]
+ 
+webservernginx
+ 
+webservernodejs
